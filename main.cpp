@@ -51,8 +51,12 @@ int main() {
 	ann.PrintError();
 	cout << endl;
 	ann.Backprop();
-	ann.PrintMatrix();
-	ann.PrintDerError();
+	for (int epoch = 0; epoch < 100; epoch++) {
+		ann.FeedForward();
+		ann.Backprop();
+		ann.PrintNeuralNetwork();
+	}
+	
 
 	/*for (int epoch = 0; epoch < 100; epoch++) {
 		ann.FeedForward();

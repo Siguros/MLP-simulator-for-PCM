@@ -156,7 +156,7 @@ void NeuralNetwork::ErrorInit()
 void NeuralNetwork::FeedForward()
 {
 		//First FeedForward
-		this->Layers.at(1).MatrixToLayer(this->weightMatrix.at(0).MatrixMultply(this->Layers.at(0).LayerToMatrix()));
+		this->Layers.at(1).MatrixToLayer(this->weightMatrix.at(0).MatrixMultply(this->Layers.at(0).LayerToActMatrix()));
 		this->Layers.at(1).AddNeuron(this->bias->at(0));
 		for (int i = 2; i < this->NumLayer; i++) {
 			this->Layers.at(i).MatrixToLayer(this->weightMatrix.at(i - 1).MatrixMultply(this->Layers.at(i - 1).LayerToActMatrix()));
@@ -171,23 +171,29 @@ void NeuralNetwork::Backprop()
 {
 	ErrorInit();
 	//first Backpropagation
-	int OutputLayerIndex = this->NumLayer-1;
-	Matrix derivedValues = this->Layers.at(OutputLayerIndex).LayerToDerMatrix();
-	Matrix *gradientYtoZ = new Matrix(this->Layers.at(OutputLayerIndex).GetSize(), 1, false); 
-	for (int i = 0; i < this->Errors.size(); i++) {
-		double d = derivedValues.GetVal(i, 0);
-		double e = this->Errors.at(i);
-		double g = d * e;
-		gradientYtoZ->SetMatrix(i, 0, g);
+	Layer *gradientYtoz = new Layer(this->MSERROR.size());
+	Matrix gradientMat = Matrix(this->DerError->at(NumLayer - 3).GetRow(), this->DerError->at(NumLayer - 3).GetCol(), false);
+	for (int row = 0; row < DerError->at(NumLayer - 2).GetRow(); row++) {
+		for (int col = 0; col < DerError->at(NumLayer - 2).GetCol(); col++) {
+	
+			gradientYtoz->SetNeuron(row, this->MSERROR.at(row));
+			DerError->at(NumLayer - 2).SetMatrix(row, col, (this->MSERROR.at(row))*this->Layers.at(NumLayer - 2).GetNeuron(col).GetActVal());
+		}
 	}
-	int lastHiddenLayerIndex = OutputLayerIndex - 1;
-	Layer lastHiddenLayer = this->Layers.at(lastHiddenLayerIndex);
-	Matrix weightOutputToHidden = this->weightMatrix.at(lastHiddenLayerIndex);
-	Matrix *deltaOutputToHidden = new Matix(gradientYtoZ.TransPose)
-	//Moving from last hidden layer to inputLayer
-	for (int idx = OutputLayerIndex - 1; idx >= 0; idx--) {
+	// Output to hidden
 
+
+	for (int idx = NumLayer - 3; idx >= 0; idx--) {
+		gradientMat = (weightMatrix.at(idx + 1).TransPose().MatrixMultply(gradientYtoz->LayerToMatrix()));
+		for (int row = 0; row < DerError->at(idx).GetRow(); row++) {
+			for (int col = 0; col < DerError->at(idx).GetCol(); col++) {
+				for (int grow = 0; grow < gradientMat.GetRow(); grow++) {
+					this->DerError->at(idx).AddMatrix(row, col, this->Layers.at(idx + 1).GetNeuron(row).GetDerVal()*gradientMat.GetVal(grow, 0)*this->Layers.at(idx).GetNeuron(col).GetActVal());
+				}
+			}
+		}
 	}
+	weightupdate(DerError);
 }
 
 void NeuralNetwork::weightupdate(vector<Matrix> *Dererror)

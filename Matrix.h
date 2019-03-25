@@ -21,6 +21,7 @@ public:
 	// property function
 	void RandMatrix();
 	void SetMatrix(int rowidx, int colidx, double val);
+	void AddMatrix(int rowidx, int colidx, double val);
 	const double GetVal (int rowidx, int colidx);
 	void printMatrx();
 	const vector<vector<double>>& GetVector()const;

@@ -69,6 +69,11 @@ void Matrix::SetMatrix(int rowidx, int colidx, double val)
 	this->val.at(rowidx).at(colidx) = val;
 }
 
+void Matrix::AddMatrix(int rowidx, int colidx, double val)
+{
+	this->val.at(rowidx).at(colidx) += val;
+}
+
 const double Matrix::GetVal(int rowidx, int colidx)
 {
 	return val.at(rowidx).at(colidx);
